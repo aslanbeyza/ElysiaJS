@@ -1,11 +1,28 @@
-import { password } from 'bun'
-import { Cookie, Elysia, error, t } from 'elysia'
+import { Elysia, t } from 'elysia'
+
 
 export const user = new Elysia({prefix:'/user'})
 
     .state({
         user: {} as Record<string,string>,
-        session:{} as Record<string,string>
+        session:{} as Record<number,string>
+    })
+
+    .model({
+        signIn : t.Object({
+            username:t.String({minLength:1}),
+            password:t.String({minLength:8})
+
+        }),
+        session:t.Cookie(
+            {
+                token:t.Number()
+            },
+            {
+                secrets:'seia'
+            }
+        ),
+        optionalSession : t.Optional(t.Ref('session'))
     })
 
 .put('/sign-up',async({body:{username,password} ,store ,error}) => { 
@@ -19,10 +36,7 @@ export const user = new Elysia({prefix:'/user'})
         success:true,
         message:'User created'
     }},{
-        body: t.Object({
-            username:t.String({minLength:1}),
-            password:t.String({minLength:8})
-        })
+       body:'signIn'
     })
 
     .post('/sign-in', async ({
@@ -49,23 +63,39 @@ export const user = new Elysia({prefix:'/user'})
             message: `Signed in as ${username}`
         };
     },{
-        body: t.Object({
-            username: t.String({minLength:1}),
-            password:t.String({minLength:8})
-        }),
-        cookie: t.Cookie(
-            {
-                token:t.Number()
-            },
-            {
-                secrets: 'seia'
-            }
-        )
+        body:'signIn',
+        cookie:'session'
     });
     
+ user.get('/sign-out',({cookie: {token}})=>{
+    token.remove()
+    return{
+        success:true,
+        message:'Sign out'
+    }
+},{
+    cookie:'session'
+})
 
-
-
-
+user.get('/profile', ({cookie: {token}, store:{session},error}) => {
+    if (!token?.value) {
+        return error(401, {
+            success: false,
+            message: 'Unauthorized'
+        });
+    }
+    const username = session[token.value]
+    if(!username)
+        return error(401,{
+            success:false,
+            message:'Unauthorized'
+        })
+        return{
+            success: true,
+            username
+        }
+},{
+    cookie:'session'
+})
 
 
