@@ -20,6 +20,14 @@ class Note {
 export const note = new Elysia({prefix:'/note'})
 
 .decorate('note', new Note())
+
+.onTransform(function log({body,params,path,request:{method}}){
+    console.log(`${method} ${path}` , {
+        body,
+        params
+    })
+})
+
 .get('/', ({ note }) => note.data)
 //Put
 .put('/',({note,body:{data}})=>note.add(data),{
