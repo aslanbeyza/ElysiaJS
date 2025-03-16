@@ -27,32 +27,26 @@ export const note = new Elysia({prefix:'/note'})
         data:t.String()
     })
 })
+.guard({
+    params:t.Object({
+        index:t.Number()
+    })
+})
 //Get
 .get('/:index',({ note, params: { index }, error }) => {
     return note.data[index] ?? error(404, 'oops! :( ) ');
 }
-,{
-    params: t.Object({
-        index: t.Number()
-    })
-})
+)
 //delete
 .delete('/:index',({note,params:{index},error})=>{
     if(index in note.data) return note.remove(index)
         return error(422)
-},{
-    params: t.Object({
-        index:t.Number()
-    })
 })
 //patch
 .patch('/:index',({note,params:{index},body:{data},error})=>{
     if ( index in note.data) return note.update(index,data)
-        return error(422)
+        return error(422)  //422:İstek sunucuya ulaşmıştır.Sunucu isteği anlamıştır.Ama içeriği işleyememektedir. ❌
 },{
-    params:t.Object({
-        index:t.Number()
-    }),
     body:t.Object({
         data:t.String()
     })
