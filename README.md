@@ -1,4 +1,5 @@
-# Express kullanandaa ne bilim yanii sdkfhkdsghdsfjkgjds her gün daha cahil olduğumu öğreniyorum rezoo
+
+
 
 ## Getting Started
 To get started with this template, simply paste this command into your terminal:
